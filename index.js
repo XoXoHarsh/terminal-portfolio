@@ -12,12 +12,14 @@ const getTerminalSize = () => ({
   height: process.stdout.rows || 24,
 });
 
+// Helper to strip ANSI codes for accurate width calculation
+const stripAnsi = (str) => str.replace(/\u001B\[[0-9;]*[a-zA-Z]/g, "");
+
 // Creates a centered box with specified content and styling
 const createBox = (content, color, title = "") => {
-  // Calculate the width of the content
-  const contentWidth = Math.max(
-    ...content.split("\n").map((line) => line.length)
-  );
+  // Calculate the width of the content without ANSI escape codes
+  const lines = content.split("\n");
+  const contentWidth = Math.max(...lines.map((line) => stripAnsi(line).length));
   // Add padding, borders, and margin to get total box width
   const totalBoxWidth = contentWidth + 4; // 2 for padding + 2 for borders
 
@@ -30,7 +32,7 @@ const createBox = (content, color, title = "") => {
     Math.floor((terminalWidth - totalBoxWidth) / 2)
   );
 
-  return boxen(chalk[color](content), {
+  return boxen(content, {
     padding: 1,
     margin: {
       top: 1,
@@ -38,61 +40,70 @@ const createBox = (content, color, title = "") => {
       left: marginLeft,
       right: marginLeft,
     },
-    borderStyle: "double",
+    borderStyle: "round",
     borderColor: color,
     title: title,
     titleAlignment: "center",
     textAlignment: "center",
-    float: "center",
   });
 };
 
 // Display welcome message
 const showWelcome = () => {
-  const welcomeText = figlet.textSync("Welcome!", {
+  const nameBanner = figlet.textSync("Harsh Sharma", {
     font: "Standard",
-    horizontalLayout: "full",
+    horizontalLayout: "default",
   });
-  console.log(createBox(welcomeText, "cyan", "✨ My Portfolio ✨"));
+
+  const subtitle = chalk.bold.cyan("Software Engineer III @ Google — YouTube Create");
+  const tagline = chalk.dim("Stack-agnostic problem solver • Building YouTube's Mobile Video Editor");
+
+  const fullBanner = `${chalk.cyan(nameBanner)}\n\n${subtitle}\n${tagline}`;
+  console.log(createBox(fullBanner, "cyan"));
 };
 
 // Portfolio content
 const portfolioContent = {
   "About Me": {
-    content: `Hello, my name is Harsh Sharma. I am a final-year BTech student with an interest in coding and feel very lucky to have been offered a software engineer role at Google. I have built a few personal projects and enjoy solving DSA/CP problems every now and then. I love outdoor sports and am up for any challengers anytime (unless it’s some kind of martial arts, and I’m going to get beaten up).`,
+    content: `I am a Software Engineer III at Google on the YouTube Create team, building YouTube's Mobile Video Editor for creators worldwide using Flutter, native Android, and native iOS.
+
+I consider myself a stack-agnostic problem solver—driven by curiosity, tackling complex and ambiguous engineering challenges, and staying curious about forefronts in tech. I actively use AI workflows to accelerate how I build, debug, and iterate.
+
+Outside of work, I'm always up for discussing interesting engineering problems, technology architecture, or catching a game of outdoor sports.`,
     color: "green",
   },
   "My Experience": {
-    content: `🏢 Technology Intern at Fidelity International (June-July 2024)
-• Developed a POC of custodial crypto wallet by reverse engineering metamask and metamask institutional.
-• Implemented a IAM like dashboard using MERN Stack for access control over keys and every transaction.
-• Documented the entire reverse engineering process with architecture diagram and the codebase for future reference.
+    content: `${chalk.bold.cyan("🏢 Software Engineer III at Google")} ${chalk.dim("(June 2025 – Present)")}
+• Team: YouTube Create
+• Building YouTube's Mobile Video Editor for creators worldwide using Flutter, native Android, and native iOS.
+• Integrating AI workflows to accelerate developer velocity, prototyping, and debugging.
 
-🏢 Teaching Assistant at Ask Senior (Sept-Oct 2023)
-• Provided guidance and resolved DSA/CP-related doubts
-• Served as a mentor and fostered a collaborative learning environment.
-• Provided feedback to improve the course and enhance learning outcomes.`,
+${chalk.bold.yellow("🏢 Technology Intern at Fidelity International")} ${chalk.dim("(June – July 2024)")}
+• Team: Innovation Team
+• Developed a POC of an enterprise cryptocurrency wallet by reverse engineering MetaMask and MetaMask Institutional.
+• Built an IAM-like dashboard for granular access control over keys and transactions.
+• Documented architecture diagrams, threat models, and codebases for future reference.`,
     color: "yellow",
   },
-  "Tech Stack I know": {
-    content: `${chalk.blue("Frontend")}:  React.js  |  TypeScript  |  HTML5/CSS3
-${chalk.green("Backend")}:   Node.js  |  Express | Firebase 
-${chalk.red("Database")}:  MongoDB  |  PostgreSQL  |  SQLite
-${chalk.magenta("DevOps")}:    GitHub  |  Docker  |  CI/CD  |  Jenkins
-${chalk.yellow("Tools")}:     Git  |  Jira  |  Postman  |  VS Code`,
+  "Tech Stack": {
+    content: `${chalk.cyan("📱 Mobile:")}       Flutter  |  Dart  |  Android (Kotlin)  |  iOS (Swift)
+${chalk.yellow("⚡ AI & Tools:")}   Agentic Workflows  |  LLM APIs  |  AI Developer Tooling
+${chalk.green("💻 Languages:")}    TypeScript  |  JavaScript  |  C++  |  Python
+${chalk.magenta("🌐 Data & Web:")}   Node.js  |  PostgreSQL  |  MongoDB  |  Firebase
+${chalk.blue("🛠️ DevOps:")}       Docker  |  Git  |  CI/CD  |  Linux`,
     color: "blue",
   },
   "My Coding Profiles": {
     content: `🏆 LeetCode: ${chalk.cyan("https://leetcode.com/xoxoharsh/")}
-    Max Rating: 1962 | Problems Solved: 680+
+    Rating: 2018 (Knight) | Problems Solved: 788
 
-⭐ CodeForces: ${chalk.cyan("https://codeforces.com/profile/XoXoHarsh")}
-    Max Rating: 1556 | Problem Solved: 500+
+⭐ Codeforces: ${chalk.cyan("https://codeforces.com/profile/XoXoHarsh")}
+    Max Rating: 1556 (Specialist) | Problems Solved: 610+
 
-🌟 GeeksForGeeks: ${chalk.cyan(
+🌟 GeeksforGeeks: ${chalk.cyan(
       "https://www.geeksforgeeks.org/user/harshsharma20503/"
     )}
-    Problem Solved: 250+ 
+    Problems Solved: 250+
 
 💻 HackerRank: ${chalk.cyan(
       "https://www.hackerrank.com/profile/harshsharma20503"
@@ -101,12 +112,13 @@ ${chalk.yellow("Tools")}:     Git  |  Jira  |  Postman  |  VS Code`,
     color: "magenta",
   },
   "Contact Info": {
-    content: `📧 Email: ${chalk.cyan("harshsharma20503@gmail.com")}
-🔗 LinkedIn: ${chalk.cyan("https://www.linkedin.com/in/harshsharma20503/")}
-🐙 GitHub: ${chalk.cyan("https://github.com/HarshSharma20503/")}
+    content: `🌐 Website:  ${chalk.cyan("https://xoxoharsh.in")}
+💼 LinkedIn: ${chalk.cyan("https://linkedin.com/in/xoxoharsh")}
+🐙 GitHub:   ${chalk.cyan("https://github.com/XoXoHarsh")}
+📧 Email:    ${chalk.cyan("harshsharma20503@gmail.com")}
 
-${chalk.italic("Fun fact: I can debug faster than a rubber duck! 🦆")}`,
-    color: "red",
+${chalk.dim("Always happy to chat about tech, mobile systems, or interesting problems to solve!")}`,
+    color: "cyan",
   },
   Exit: {
     content:
